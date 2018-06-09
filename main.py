@@ -36,4 +36,9 @@ if __name__ == "__main__":
         except Exception as e:
             print(e)
 
-        sleep(randint(3, 7))
+        sleep(randint(1,2))
+
+    items = driver.find_elements_by_class_name("b-item")
+
+    for item in items:
+        
