@@ -40,5 +40,3 @@ if __name__ == "__main__":
 
     items = driver.find_elements_by_class_name("b-item")
 
-    for item in items:
-        
