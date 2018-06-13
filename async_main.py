@@ -41,7 +41,7 @@ def load_ads():
 
 def parse_ad(ad):
     advertisment = {}
-    advertisment['Id'] = ad['id']
+    advertisment['Id'] = str(ad['id'])
     options = webdriver.ChromeOptions()
     options.add_argument("--start-maximized")
     options.add_argument("--headless")
