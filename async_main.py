@@ -1,3 +1,4 @@
+import re
 import asyncio
 from random import randint
 from time import sleep
@@ -5,8 +6,7 @@ from pathlib import Path
 
 from aiohttp import ClientSession
 import json
-from xml.etree import ElementTree
-from bs4 import BeautifulSoup
+import xml.etree.ElementTree as ET
 from selenium import webdriver
 
 
@@ -74,12 +74,27 @@ def parse_ad(ad):
     advertisment['Description'] = description
 
     price = driver.find_element_by_class_name("price-value").text
-    advertisment['Price'] = price
+    advertisment['Price'] = re.sub("\D", "", price)
 
-    print(advertisment, end="\n\n")
+    # print(advertisment, end="\n\n")
 
     driver.close()
 
+    return advertisment
+
+
+def save_to_file(advertisments):
+    with open("parsed_ads.json", "w") as file:
+        json.dump(advertisments, file)
+
+    root = ET.Element("Ads")
+    for advertisment in advertisments:
+        ad = ET.SubElement(root, "Ad")
+        for property, value in advertisment.items():
+            ET.SubElement(ad, property).text = value
+
+    tree = ET.ElementTree(root)
+    tree.write("data.xml")
 
 
 async def main():
@@ -90,20 +105,9 @@ async def main():
     ads = load_ads()
     for ad in ads:
         advertisments.append(parse_ad(ad))
+
+        save_to_file(advertisments)
         sleep(randint(5, 10))
-
-    with open("parsed_ads.json", "w") as file:
-        json.dump(advertisments, file)
-
-
-
-def get_saved_xml() -> ElementTree:
-    if data_file_name.exists():
-        # with open(data_file_name) as file:
-        return ElementTree.parse(data_file_name)
-
-    else:
-        pass
 
 
 if __name__ == "__main__":
