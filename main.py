@@ -13,7 +13,7 @@ from selenium.common.exceptions import NoSuchElementException
 
 async def update_ads(session):
     params = {
-        'shortcut': 'active',  # active -- активные объявления, closed -- закрытые
+        'shortcut': 'closed',  # active -- активные объявления, closed -- закрытые
         'offset': 0,
         'limit': 99
     }
@@ -99,13 +99,13 @@ def save_to_file(advertisments):
 
 
 def log_missed_element(ad_id):
-    with open('missed_elements.txt', 'a') as file:
+    with open('missed_ids.txt', 'a') as file:
         file.write(f"{ad_id}\n")
 
 
 async def main():
     # async with ClientSession() as session:
-        # await update_ads(session)
+    #     await update_ads(session)
 
     advertisments = []
     ads = load_ads()
