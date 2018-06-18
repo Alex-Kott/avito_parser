@@ -45,41 +45,44 @@ def parse_ad(ad):
     advertisment['Id'] = str(ad['id'])
     options = webdriver.ChromeOptions()
     options.add_argument("--start-maximized")
-    options.add_argument("--headless")
+    # options.add_argument("--headless")
     driver = webdriver.Chrome("./chromedriver", chrome_options=options)
 
     driver.get(f"https://m.avito.ru{ad['url']}")
 
-    # смотрим номер
-    driver.find_element_by_class_name("action-show-number").click()
-    sleep(1)
-    phone_span = driver.find_element_by_class_name("js-phone-number")
-    phone = phone_span.text
-    advertisment['ContactPhone'] = phone
+    try:
+        # смотрим номер
+        driver.find_element_by_class_name("action-show-number").click()
+        sleep(1)
+        # phone_span = driver.find_element_by_class_name("js-phone-number") # перестало работать
+        phone_span = driver.find_element_by_class_name("amw-test-item-click")
+        phone = phone_span.text
+        advertisment['ContactPhone'] = phone
 
-    full_address = driver.find_element_by_class_name("avito-address-text").text
-    city = full_address.split(',')[0]
-    advertisment['Region'] = city
+        full_address = driver.find_element_by_class_name("avito-address-text").text
+        city = full_address.split(',')[0]
+        advertisment['Region'] = city
 
-    info_params = driver.find_element_by_class_name("info-params")
-    params = info_params.find_elements_by_class_name("param")
-    advertisment['Category'] = params[-1].text
-    advertisment['GoodsType'] = params[0].text
+        info_params = driver.find_element_by_class_name("info-params")
+        params = info_params.find_elements_by_class_name("param")
+        advertisment['Category'] = params[-1].text
+        advertisment['GoodsType'] = params[0].text
 
-    advertisment['AdType'] = "Товар приобретен на продажу"
+        advertisment['AdType'] = "Товар приобретен на продажу"
 
-    title = driver.find_element_by_class_name("single-item-header").text
-    advertisment['Title'] = title
+        title = driver.find_element_by_class_name("single-item-header").text
+        advertisment['Title'] = title
 
-    description = driver.find_element_by_class_name("description-preview-wrapper").text
-    advertisment['Description'] = description
+        description = driver.find_element_by_class_name("description-preview-wrapper").text
+        advertisment['Description'] = description
 
-    price = driver.find_element_by_class_name("price-value").text
-    advertisment['Price'] = re.sub("\D", "", price)
+        price = driver.find_element_by_class_name("price-value").text
+        advertisment['Price'] = re.sub("\D", "", price)
 
-    print(advertisment, end="\n\n")
-
-    driver.close()
+        print(advertisment, end="\n\n")
+    except Exception as e:
+        driver.close()
+        raise e
 
     return advertisment
 
@@ -141,8 +144,9 @@ async def main():
             save_parsed_ids(parsed_ids)
 
             sleep(randint(3, 5))
-        except NoSuchElementException:
+        except NoSuchElementException as e:
             log_missed_element(ad['id'])
+            print(e)
             print(f"Missed advertisment: {ad['id']}", end='\n\n')
 
 
