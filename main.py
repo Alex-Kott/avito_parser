@@ -13,7 +13,7 @@ from selenium.common.exceptions import NoSuchElementException
 
 async def update_ads(session):
     params = {
-        'shortcut': 'closed',  # active -- активные объявления, closed -- закрытые
+        'shortcut': 'active',  # active -- активные объявления, closed -- закрытые
         'offset': 0,
         'limit': 99
     }
@@ -85,8 +85,14 @@ def parse_ad(ad):
 
 
 def save_to_file(advertisments):
-    with open("parsed_ads.json", "w") as file:
-        json.dump(advertisments, file)
+    with open(parsed_ads_json_file) as file:
+        data = json.loads(file.read())
+
+    for ad in advertisments:
+        data.append(ad)
+
+    with open(parsed_ads_json_file, "w") as file:
+        json.dump(data, file)
 
     root = ET.Element("Ads")
     for advertisment in advertisments:
@@ -103,26 +109,50 @@ def log_missed_element(ad_id):
         file.write(f"{ad_id}\n")
 
 
+def get_parsed_ids():
+    parsed_ids = set()
+    with open(parsed_ids_file) as file:
+        for i in file.readlines():
+            parsed_ids.add(int(i))
+    return parsed_ids
+
+
+def save_parsed_ids(parsed_ids):
+    with open(parsed_ids_file, "w") as file:
+        for i in parsed_ids:
+            file.write(f"{i}\n")
+
+
 async def main():
     # async with ClientSession() as session:
     #     await update_ads(session)
 
     advertisments = []
     ads = load_ads()
+    parsed_ids = get_parsed_ids()
     for ad in ads:
+        if int(ad['id']) in parsed_ids:
+            continue
         try:
             advertisments.append(parse_ad(ad))
+
+            save_to_file(advertisments)
+            parsed_ids.add(int(ad['id']))
+            save_parsed_ids(parsed_ids)
+
+            sleep(randint(1, 3))
         except NoSuchElementException:
             log_missed_element(ad['id'])
             print(f"Missed advertisment: {ad['id']}", end='\n\n')
 
-        save_to_file(advertisments)
-        sleep(randint(5, 10))
+
 
 
 if __name__ == "__main__":
     data_file_name = Path('data.xml')
     url = "https://m.avito.ru/user/2155c5e5c0b8a2f64e12a7d40c06333b/profile/items"
+    parsed_ids_file = "parsed_ids.txt"
+    parsed_ads_json_file = "parsed_ads.json"
 
 
 
