@@ -140,7 +140,7 @@ async def main():
             parsed_ids.add(int(ad['id']))
             save_parsed_ids(parsed_ids)
 
-            sleep(randint(3, 6))
+            sleep(randint(3, 5))
         except NoSuchElementException:
             log_missed_element(ad['id'])
             print(f"Missed advertisment: {ad['id']}", end='\n\n')
